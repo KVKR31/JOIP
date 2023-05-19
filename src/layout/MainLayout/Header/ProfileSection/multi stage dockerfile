@@ -1,0 +1,16 @@
+FROM alpine/git as builder
+RUN cd / && git clone https://github.com/spring-projects/spring-petclinic.git && \
+    pwd && ls /spring-petclinic
+
+FROM amazoncorretto:3-amazoncorretto-17 as vcs
+RUN from=builder /spring petclinic /spring petclinic
+RUN ls /spring petclinic
+RUN cd /spring-petclinic && mvn package
+
+FROM amazoncorretto:3-amazoncorretto-17
+LABEL author="vinodreddy"
+EXPOSE 8080
+ARG HOME_DIR=/spc
+WORKDIR ${HOME_DIR}
+COPY --from=vcs /spring-petclinic/target/spring-*.jar ${HOME_DIR}/spring-petclinic.jar
+CMD ("java", "-jar", "spring-petclinic.jar") 
